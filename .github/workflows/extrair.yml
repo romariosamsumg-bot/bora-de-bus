@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - ".github/workflows/extrair.yml"
-      - "Bora_de_Bus_Atualizacao_v0.4.zip"
+      - "Bora_de_Bus_Atualizacao_v0.5.zip"
 
 permissions:
   contents: write
@@ -22,11 +22,11 @@ jobs:
 
       - name: Extrair atualização
         run: |
-          test -f "Bora_de_Bus_Atualizacao_v0.4.zip" || {
+          test -f "Bora_de_Bus_Atualizacao_v0.5" || {
             echo "O ZIP da versão 0.4 não foi encontrado."
             exit 1
           }
-          unzip -o "Bora_de_Bus_Atualizacao_v0.4.zip"
+          unzip -o "Bora_de_Bus_Atualizacao_v0.5.zip"
 
       - name: Salvar atualização
         run: |
