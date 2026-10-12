@@ -18,10 +18,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Extrair arquivos
-        run: unzip -o "Bora_de_Bus_Cloudflare_v0.1.zip"
+        run: unzip -
 
       - name: Salvar projeto extraido
-        run: |
+        run: unzip -o "Bora_de_Bus_Atualizacao_v0.2.zip"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .
