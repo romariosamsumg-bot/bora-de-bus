@@ -1,7 +1,7 @@
 export type Route={id:string;number:string;name:string;type:string};
 export type Trip={id:string;service:string;head:string;direction:string;shape:string;pattern:number;freq:[number,number,number,boolean][]};
 export type RouteData={trips:Trip[];patterns:[string,number,number][][];stops:Record<string,[string,number,number]>;shapes:Record<string,[number,number][]>;calendar:Record<string,string>[];exceptions:Record<string,string>[]};
-export type Plan={leave:number;board:number;alight:number;arrive:number;duration:number;head:string;approx:boolean;headway:number;trip:string;walk:number;lastWalk:number;buffer:number};
+export type Plan={basis?:string;leave:number;board:number;alight:number;arrive:number;duration:number;head:string;approx:boolean;headway:number;trip:string;walk:number;lastWalk:number;buffer:number};
 export function clock(t:number){return new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}).format(t)}
 export function rioDate(t=Date.now()){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(t)}
 function active(data:RouteData,service:string,date:string){const key=date.replaceAll('-','');const exc=data.exceptions.find(e=>e.service_id===service&&e.date===key);if(exc)return exc.exception_type==='1';const c=data.calendar.find(c=>c.service_id===service);const day=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date(date+'T12:00:00-03:00').getUTCDay()];return !!c&&key>=c.start_date&&key<=c.end_date&&c[day]==='1'}

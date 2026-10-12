@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import {arrivals,project,observedPlan} from '../lib/arrival.ts';
+import {mergeVehicles} from '../lib/history.ts';
+const now=Date.parse('2026-10-12T15:00:00Z');
+const point=(meters:number)=>({lat:-22.9,lon:-43.2+meters/(111195*Math.cos(22.9*Math.PI/180))});
+const data:any={trips:[{direction:'0',shape:'s',pattern:0,head:'Centro'}],shapes:{s:[[point(-300).lat,point(-300).lon],[point(3500).lat,point(3500).lon]]},stops:{},patterns:[[]]};
+for(let i=0;i<=6;i++){const p=point(i*500);data.stops['s'+i]=['Stop '+i,p.lat,p.lon];data.patterns[0].push(['s'+i,i*100,i*100])}
+const v=(id:string,positions:[number,number][])=>{const history=positions.map(([meters,seconds])=>({...point(meters),time:new Date(now+seconds*1000).toISOString(),direction:'I',shape:'s'}));return {...history[history.length-1],id,speed:0,history}};
+const fast=v('fast',[[0,-120],[300,-60],[600,0]]),slow=v('slow',[[300,-120],[450,-60],[600,0]]);
+assert.ok(arrivals(data,'s2','0',[slow],now)[0].minutes>arrivals(data,'s2','0',[fast],now)[0].minutes,'slow observed movement increases ETA');
+assert.equal(arrivals(data,'s2','0',[v('stopped',[[600,-120],[603,-60],[607,0]])],now).length,0,'stationary bus cannot give departure prediction');
+assert.equal(arrivals(data,'s2','0',[v('jump',[[100,-120],[10000,-60],[600,0]])],now)[0].method,'schedule','teleport resets history');
+assert.equal(arrivals(data,'s2','0',[v('gap',[[0,-600],[600,0]])],now)[0].method,'schedule','missing observations cannot imply motion');
+const peer1=v('peer1',[[-100,-600],[0,-550],[0,-500],[250,-400],[500,-300],[750,-200],[1000,-100],[1100,0]]);
+const peer2=v('peer2',[[-100,-700],[0,-650],[0,-600],[250,-500],[500,-400],[750,-300],[1000,-200],[1100,-100],[1200,0]]);
+const target=v('target',[[50,-120],[100,-60],[150,0]]);
+const learned=arrivals(data,'s2','0',[target,peer1,peer2],now,250).find(x=>x.id==='target')!;
+assert.equal(learned.method,'segments');assert.ok(learned.samples>=4);assert.ok(learned.minutes>=5,'observed dwell and slow traversals exceed 3-minute schedule');
+const refreshed=mergeVehicles([{...fast,history:[...fast.history,fast.history[0]]}],[fast],now);assert.equal(refreshed[0].history!.length,3,'deduplicate timestamps');
+assert.equal(mergeVehicles([],refreshed,now).length,0,'do not resurrect absent vehicles');
+assert.equal(arrivals(data,'s0','0',[fast],now).length,0,'passed stop');
+assert.equal(arrivals(data,'s2','0',[{...fast,direction:'V'}],now).length,0,'opposite direction');
+assert.equal(arrivals(data,'s2','0',[{...fast,time:new Date(now-181000).toISOString()}],now).length,0,'stale GPS');
+assert.equal(arrivals(data,'s2','0',[{...fast,time:'broken'}],now).length,0,'invalid timestamp');
+const loop=project([0,0],[[0,-.01],[0,.01],[.01,.01],[0,-.01],[0,.01]]);assert.ok(loop.ambiguous,'overlapping route requires disambiguation');
+const plan=observedPlan(data,{from:'s1',to:'s2',direction:'0',date:'2026-10-12',time:'12:20',mode:'arrive',walk:0,lastWalk:1,buffer:0},[target,peer1,peer2],now);assert.ok(plan?.basis?.startsWith('GPS'));
+assert.equal(observedPlan(data,{from:'s1',to:'s2',direction:'0',date:'2026-10-13',time:'12:20',mode:'arrive',walk:0,lastWalk:1,buffer:0},[target],now),null,'future date cannot extrapolate live GPS');
+console.log('15 observed-history regression checks passed');

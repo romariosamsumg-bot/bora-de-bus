@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {arrivals,distance,project} from '../lib/arrival.ts';
+const now=Date.parse('2026-10-12T12:00:00Z');
+const data:any={trips:[{direction:'0',shape:'s',pattern:0,head:'Centro'}],shapes:{s:[[-22.9,-43.2],[-22.9,-43.19],[-22.9,-43.18]]},stops:{a:['A',-22.9,-43.2],b:['B',-22.9,-43.19],c:['C',-22.9,-43.18]},patterns:[[['a',0,0],['b',600,600],['c',1200,1200]]]};
+const v={id:'X',lat:-22.9,lon:-43.195,direction:'I',shape:'s',time:new Date(now-30000).toISOString(),speed:20};
+assert.equal(arrivals(data,'b','0',[v],now)[0].minutes,5);
+assert.equal(arrivals(data,'a','0',[v],now).length,0,'already passed');
+assert.equal(arrivals(data,'b','0',[{...v,direction:'V'}],now).length,0,'wrong direction');
+assert.equal(arrivals(data,'b','0',[{...v,time:new Date(now-181000).toISOString()}],now).length,0,'stale');
+assert.equal(arrivals(data,'b','0',[{...v,lat:-23.1}],now).length,0,'off route');
+assert.equal(arrivals(data,'b','0',[{...v,direction:'',shape:'unknown'}],now).length,0,'unknown direction and shape');
+assert.ok(distance([-22.9,-43.2],[-22.9,-43.19])>1000);
+console.log('7 arrival/projection checks passed');
