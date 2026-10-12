@@ -1,0 +1,6 @@
+{
+ "name":"bora-de-bus-rio",
+ "main":"worker.ts",
+ "compatibility_date":"2026-06-01",
+ "assets":{"directory":"../portable-dist","binding":"ASSETS","not_found_handling":"single-page-application","run_worker_first":["/api/*"]}
+}
