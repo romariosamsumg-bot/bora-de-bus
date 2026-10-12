@@ -1,0 +1,49 @@
+name: Atualizar Bora de Bus
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/extrair.yml"
+      - "Bora_de_Bus_Atualizacao_v0.2.zip"
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Abrir repositório
+        uses: actions/checkout@v4
+
+      - name: Extrair atualização
+        run: |
+          test -f "Bora_de_Bus_Atualizacao_v0.2.zip" || {
+            echo "Envie o ZIP da atualização para a raiz do repositório."
+            exit 1
+          }
+          unzip -o "Bora_de_Bus_Atualizacao_v0.2.zip"
+
+      - name: Salvar arquivos atualizados
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            app/bus-app.tsx \
+            app/bus-map.tsx \
+            app/globals.css \
+            lib/vehicles.ts \
+            scripts/vehicles.test.ts \
+            ATUALIZAR.md
+
+          if git diff --cached --quiet; then
+            echo "A atualização já está aplicada."
+          else
+            git commit -m "Atualizar design e corrigir filtro GPS"
+            git push
+          fi
