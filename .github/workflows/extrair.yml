@@ -1,33 +1,49 @@
-name: Extrair projeto
+name: Atualizar Bora de Bus
 
 on:
+  workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - ".github/workflows/extrair.yml"
-  workflow_dispatch:
+      - "Bora_de_Bus_Atualizacao_v0.2.zip"
 
 permissions:
   contents: write
 
 jobs:
-  extrair:
+  atualizar:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Abrir repositorio
+      - name: Abrir repositório
         uses: actions/checkout@v4
 
-      - name: Extrair arquivos
-        run: unzip -o "Bora_de_Bus_Cloudflare_v0.1.zip"
+      - name: Extrair atualização
+        run: |
+          test -f "Bora_de_Bus_Atualizacao_v0.2.zip" || {
+            echo "Envie o ZIP da atualização para a raiz do repositório."
+            exit 1
+          }
+          unzip -o "Bora_de_Bus_Atualizacao_v0.2.zip"
 
-      - name: Salvar projeto extraido
+      - name: Salvar arquivos atualizados
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .
+
+          git add \
+            app/bus-app.tsx \
+            app/bus-map.tsx \
+            app/globals.css \
+            lib/vehicles.ts \
+            scripts/vehicles.test.ts \
+            ATUALIZAR.md
+
           if git diff --cached --quiet; then
-            echo "Os arquivos ja estavam extraidos."
+            echo "A atualização já está aplicada."
           else
-            git commit -m "Extrair projeto Bora de Bus"
-            git push origin HEAD:main
+            git commit -m "Atualizar design e corrigir filtro GPS"
+            git push
           fi
