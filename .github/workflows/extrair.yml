@@ -3,11 +3,10 @@ name: Atualizar Bora de Bus
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - ".github/workflows/extrair.yml"
-      - "Bora_de_Bus_Atualizacao_v0.5.zip"
+      - '.github/workflows/extrair.yml'
+      - 'Bora_de_Bus_Atualizacao_v0.5.zip'
 
 permissions:
   contents: write
@@ -17,30 +16,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Abrir repositório
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Extrair atualização
-        run: |
-          test -f "Bora_de_Bus_Atualizacao_v0.5" || {
-            echo "O ZIP da versão 0.4 não foi encontrado."
-            exit 1
-          }
-          unzip -o "Bora_de_Bus_Atualizacao_v0.5.zip"
+        run: unzip -o Bora_de_Bus_Atualizacao_v0.5.zip
 
       - name: Salvar atualização
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add app lib scripts \
-            cloudflare/worker.ts \
-            cloudflare/mobility.ts \
-            ATUALIZAR.md
-
-          if git diff --cached --quiet; then
-            echo "A versão 0.4 já está aplicada."
-          else
-            git commit -m "Aplicar Bora de Bus v0.4"
-            git push
-          fi
+          git add app lib scripts cloudflare/worker.ts cloudflare/mobility.ts ATUALIZAR.md
+          git diff --cached --quiet || git commit -m "Aplicar Bora de Bus v0.5"
+          git push
