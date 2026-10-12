@@ -1,0 +1,4 @@
+node_modules/
+portable-dist/
+.wrangler/
+.env*
