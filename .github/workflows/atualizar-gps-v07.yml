@@ -1,0 +1,35 @@
+name: Atualizar GPS v0.7
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizar-gps-v07
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Extrair a correção
+        run: |
+          unzip -o Bora_de_Busao_Atualizacao_v0.7_sem_workflow.zip \
+            app/api/vehicles/route.ts app/bus-app.tsx app/favorites.tsx \
+            cloudflare/worker.ts lib/gps-service.ts \
+            scripts/gps.test.cjs ATUALIZAR_v0.7.md
+
+      - name: Salvar no GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/api/vehicles/route.ts app/bus-app.tsx app/favorites.tsx cloudflare/worker.ts lib/gps-service.ts scripts/gps.test.cjs ATUALIZAR_v0.7.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Corrigir atualização do GPS v0.7"
+          git push origin HEAD:main
